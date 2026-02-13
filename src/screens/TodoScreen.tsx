@@ -17,7 +17,7 @@ import {
 } from '../api/todoApi';
 
 export default function TodoScreen() {
-  const { data, isLoading, error } = useGetTodosQuery(null);
+  const { data, isLoading, error, refetch } = useGetTodosQuery(null);
 
   const [addTodo] = useAddTodoMutation();
   const [updateTodo] = useUpdateTodoMutation();
@@ -35,6 +35,22 @@ export default function TodoScreen() {
     });
 
     setText('');
+    refetch(); // ⭐ FORCE REFRESH
+  };
+
+  const handleUpdate = async (item) => {
+    await updateTodo({
+      id: item.id,
+      title: item.title + ' Updated',
+      completed: !item.completed,
+    });
+
+    refetch();
+  };
+
+  const handleDelete = async (id) => {
+    await deleteTodo(id);
+    refetch();
   };
 
   if (isLoading) return <Text>Loading...</Text>;
@@ -63,20 +79,14 @@ export default function TodoScreen() {
             <View style={styles.row}>
               <TouchableOpacity
                 style={styles.updateBtn}
-                onPress={() =>
-                  updateTodo({
-                    id: item.id,
-                    title: item.title + ' Updated',
-                    completed: !item.completed,
-                  })
-                }
+                onPress={() => handleUpdate(item)}
               >
                 <Text style={styles.btnText}>Update</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.deleteBtn}
-                onPress={() => deleteTodo(item.id)}
+                onPress={() => handleDelete(item.id)}
               >
                 <Text style={styles.btnText}>Delete</Text>
               </TouchableOpacity>
